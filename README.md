@@ -1,5 +1,5 @@
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/bildvitta/sp-produto.svg?style=flat-square)](https://packagist.org/packages/bildvitta/sp-produto)
-[![Total Downloads](https://img.shields.io/packagist/dt/bildvitta/sp-produto.svg?style=flat-square)](https://packagist.org/packages/bildvitta/sp-produto)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/bildvitta/sp-crm.svg?style=flat-square)](https://packagist.org/packages/bildvitta/sp-crm)
+[![Total Downloads](https://img.shields.io/packagist/dt/bildvitta/sp-crm.svg?style=flat-square)](https://packagist.org/packages/bildvitta/sp-crm)
 
 ## Introduction
 
