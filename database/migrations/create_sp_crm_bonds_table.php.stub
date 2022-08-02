@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    private string $tableName;
+
+    public function __construct()
+    {
+        $this->tableName = sprintf('%sbonds', config('sp-crm.table_prefix'));
+    }
+
+    public function up()
+    {
+        if (!Schema::hasTable($this->tableName)) {
+            Schema::create($this->tableName, function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('crm_customer_id')->nullable();
+                $table->unsignedBigInteger('bond_crm_customer_id')->nullable();
+                $table->uuid('bond_crm_customer_uuid')->nullable();
+                $table->string('kind')->nullable();
+                $table->timestamps();
+            });
+        }
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists($this->tableName);
+    }
+};
