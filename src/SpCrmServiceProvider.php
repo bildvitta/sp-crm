@@ -2,8 +2,8 @@
 
 namespace BildVitta\SpCrm;
 
-use BildVitta\MessagesCrm\Console\Commands\DataImport\Crm\CustomerImportCommand;
-use BildVitta\MessagesCrm\Console\Commands\Messages\CustomersWorkerCommand;
+use BildVitta\SpCrm\Console\Commands\DataImport\Crm\CustomerImportCommand;
+use BildVitta\SpCrm\Console\Commands\Messages\CustomersWorkerCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
