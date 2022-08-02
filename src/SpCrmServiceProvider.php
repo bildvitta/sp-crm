@@ -3,6 +3,7 @@
 namespace BildVitta\SpCrm;
 
 use BildVitta\SpCrm\Console\Commands\DataImport\Crm\CustomerImportCommand;
+use BildVitta\SpCrm\Console\Commands\InstallSp;
 use BildVitta\SpCrm\Console\Commands\Messages\CustomersWorkerCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -40,6 +41,7 @@ class SpCrmServiceProvider extends PackageServiceProvider
             ->hasCommands([
                 CustomerImportCommand::class,
                 CustomersWorkerCommand::class,
+                InstallSp::class,
             ]);
     }
 }
