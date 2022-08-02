@@ -14,10 +14,11 @@ class Customer extends BaseModel
 {
     use SoftDeletes;
 
-    /**
-     * @var string|null $table_name
-     */
-    protected ?string $table_name = 'customers';
+    public function __construct()
+    {
+        parent::__construct();
+        $this->table = sprintf('%scustomers', config('sp-crm.table_prefix'));
+    }
 
     public const KIND_LIST = [
         'customer' => 'Cliente',
@@ -59,14 +60,14 @@ class Customer extends BaseModel
 
     public function bonds(): BelongsToMany
     {
-        return $this->belongsToMany(Customer::class, $this->table, 'crm_customer_id', 'bond_crm_customer_id')
+        return $this->belongsToMany(Customer::class, (new Bond())->getTable(), 'crm_customer_id', 'bond_crm_customer_id')
             ->withPivot(['kind', 'id', 'bond_crm_customer_uuid'])
             ->withTimestamps();
     }
 
     public function bonds_from(): BelongsToMany
     {
-        return $this->belongsToMany(Customer::class, $this->table, 'bond_crm_customer_id', 'crm_customer_id')
+        return $this->belongsToMany(Customer::class, (new Bond())->getTable(), 'bond_crm_customer_id', 'crm_customer_id')
             ->withPivot(['kind', 'id', 'bond_crm_customer_uuid'])
             ->withTimestamps();
     }
@@ -78,7 +79,7 @@ class Customer extends BaseModel
 
     public function related_customers()
     {
-        return $this->belongsToMany(Customer::class, $this->table, 'crm_customer_id', 'bond_crm_customer_id')
+        return $this->belongsToMany(Customer::class, (new Bond())->getTable(), 'crm_customer_id', 'bond_crm_customer_id')
             ->withPivot(['kind', 'id', 'bond_crm_customer_uuid'])
             ->withTimestamps();
     }

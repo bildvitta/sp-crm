@@ -11,10 +11,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Bond extends Model
 {
-    /**
-     * @var string|null $table_name
-     */
-    protected ?string $table_name = 'bonds';
+    public function __construct()
+    {
+        parent::__construct();
+        $this->table = sprintf('%sbonds', config('sp-crm.table_prefix'));
+    }
 
     /**
      * The attributes that are mass assignable.
