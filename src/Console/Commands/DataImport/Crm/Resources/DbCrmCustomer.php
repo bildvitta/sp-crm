@@ -39,6 +39,7 @@ class DbCrmCustomer
         LEFT JOIN nationalities ON customers.nationality_id = nationalities.id
         LEFT JOIN occupations ON customers.occupation_id = occupations.id
         LEFT JOIN civil_statuses ON customers.civil_status_id = civil_statuses.id
+        WHERE customers.deleted_at IS NULL
         LIMIT :limit OFFSET :offset";
         
         return DB::connection('crm')->select($query, [
