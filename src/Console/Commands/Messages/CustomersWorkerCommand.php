@@ -68,7 +68,18 @@ class CustomersWorkerCommand extends Command
         $sslOptions = [
             'verify_peer' => false
         ];
-        $this->connection = new AMQPSSLConnection($host, $port, $user, $password, $virtualhost, $sslOptions);
+        $options = [
+            'heartbeat' => 20
+        ];
+        $this->connection = new AMQPSSLConnection(
+            host: $host,
+            port: $port,
+            user: $user,
+            password: $password,
+            vhost: $virtualhost,
+            ssl_options: $sslOptions,
+            options: $options
+        );
         
         $this->channel = $this->connection->channel();
         
