@@ -5,7 +5,7 @@ namespace BildVitta\SpCrm\Console\Commands\Messages;
 use BildVitta\SpCrm\Console\Commands\Messages\Resources\MessageCustomer;
 use Exception;
 use Illuminate\Console\Command;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Connection\AMQPSSLConnection;
 use PhpAmqpLib\Exception\AMQPExceptionInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 
@@ -25,7 +25,7 @@ class CustomersWorkerCommand extends Command
      */
     protected $description = 'Gets and processes messages';
 
-    private AMQPStreamConnection $connection;
+    private AMQPSSLConnection $connection;
 
     private AMQPChannel $channel;
 
@@ -65,14 +65,20 @@ class CustomersWorkerCommand extends Command
         $password = config('sp-crm.rabbitmq.password');
         $virtualhost = config('sp-crm.rabbitmq.virtualhost');
         $queueName = config('sp-crm.rabbitmq.queue.customers');
-        $heartbeat = 20;
-        $this->connection = new AMQPStreamConnection(
+        $sslOptions = [
+            'verify_peer' => false
+        ];
+        $options = [
+            'heartbeat' => 20
+        ];
+        $this->connection = new AMQPSSLConnection(
             host: $host,
             port: $port,
             user: $user,
             password: $password,
             vhost: $virtualhost,
-            heartbeat: $heartbeat
+            ssl_options: $sslOptions,
+            options: $options
         );
         
         $this->channel = $this->connection->channel();
