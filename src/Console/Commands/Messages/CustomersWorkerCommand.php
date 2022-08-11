@@ -6,6 +6,7 @@ use BildVitta\SpCrm\Console\Commands\Messages\Resources\MessageCustomer;
 use Exception;
 use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPSSLConnection;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Exception\AMQPExceptionInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 
@@ -25,12 +26,24 @@ class CustomersWorkerCommand extends Command
      */
     protected $description = 'Gets and processes messages';
 
-    private AMQPSSLConnection $connection;
+    /**
+     * @var AMQPStreamConnection
+     */
+    private $connection;
 
-    private AMQPChannel $channel;
+    /**
+     * @var AMQPChannel
+     */
+    private $channel;
 
+    /**
+     * @var MessageCustomer
+     */
     private MessageCustomer $messageCustomer;
 
+    /**
+     * @param MessageCustomer $messageCustomer
+     */
     public function __construct(MessageCustomer $messageCustomer)
     {
         parent::__construct();
@@ -57,32 +70,15 @@ class CustomersWorkerCommand extends Command
         return 0;
     }
 
-    private function process()
+    /**
+     * @return void
+     */
+    private function process(): void
     {
-        $host = config('sp-crm.rabbitmq.host');
-        $port = config('sp-crm.rabbitmq.port');
-        $user = config('sp-crm.rabbitmq.user');
-        $password = config('sp-crm.rabbitmq.password');
-        $virtualhost = config('sp-crm.rabbitmq.virtualhost');
-        $queueName = config('sp-crm.rabbitmq.queue.customers');
-        $sslOptions = [
-            'verify_peer' => false
-        ];
-        $options = [
-            'heartbeat' => 20
-        ];
-        $this->connection = new AMQPSSLConnection(
-            host: $host,
-            port: $port,
-            user: $user,
-            password: $password,
-            vhost: $virtualhost,
-            ssl_options: $sslOptions,
-            options: $options
-        );
-        
+        $this->connect();
         $this->channel = $this->connection->channel();
         
+        $queueName = config('sp-crm.rabbitmq.queue.customers');
         $callback = [$this->messageCustomer, 'process'];
         $this->channel->basic_consume(
             queue: $queueName,
@@ -95,6 +91,9 @@ class CustomersWorkerCommand extends Command
         $this->closeConnection();
     }
 
+    /**
+     * @return void
+     */
     private function closeChannel(): void
     {
         try {
@@ -105,6 +104,9 @@ class CustomersWorkerCommand extends Command
         }
     }
 
+    /**
+     * @return void
+     */
     private function closeConnection(): void
     {
         try {
@@ -112,6 +114,46 @@ class CustomersWorkerCommand extends Command
                 $this->connection->close();
             }
         } catch (Exception $exception) {
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function connect(): void
+    {
+        $host = config('sp-crm.rabbitmq.host');
+        $port = config('sp-crm.rabbitmq.port');
+        $user = config('sp-crm.rabbitmq.user');
+        $password = config('sp-crm.rabbitmq.password');
+        $virtualhost = config('sp-crm.rabbitmq.virtualhost');
+        $heartbeat = 20;
+        $sslOptions = [
+            'verify_peer' => false
+        ];
+        $options = [
+            'heartbeat' => $heartbeat
+        ];
+        
+        if (app()->isLocal()) {
+            $this->connection = new AMQPStreamConnection(
+                host: $host,
+                port: $port,
+                user: $user,
+                password: $password,
+                vhost: $virtualhost,
+                heartbeat: $heartbeat
+            );
+        } else {
+            $this->connection = new AMQPSSLConnection(
+                host: $host,
+                port: $port,
+                user: $user,
+                password: $password,
+                vhost: $virtualhost,
+                ssl_options: $sslOptions,
+                options: $options
+            );
         }
     }
 }
