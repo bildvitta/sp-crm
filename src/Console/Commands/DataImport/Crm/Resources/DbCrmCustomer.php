@@ -8,7 +8,7 @@ class DbCrmCustomer
 {
     public function totalRecords(): int
     {
-        $query = "SELECT count(1) as total FROM customers";
+        $query = "SELECT count(1) as total FROM customers WHERE deleted_at IS NULL";
         $customers = DB::connection('crm')->select($query);
 
         return (int) $customers[0]->total;
