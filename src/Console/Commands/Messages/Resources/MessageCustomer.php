@@ -6,35 +6,59 @@ use BildVitta\SpCrm\Models\Customer;
 use BildVitta\SpCrm\Models\Bond;
 use PhpAmqpLib\Message\AMQPMessage;
 use stdClass;
+use Throwable;
 
 class MessageCustomer
 {
+    use LogHelper;
+
+    /**
+     * @var string
+     */
     public const UPDATED = 'customers.updated';
 
+    /**
+     * @var string
+     */
     public const CREATED = 'customers.created';
     
+    /**
+     * @var string
+     */
     public const DELETED = 'customers.deleted';
 
+    /**
+     * @param AMQPMessage $message
+     * @return void
+     */
     public function process(AMQPMessage $message): void
     {
         $message->ack();
-        $properties = $message->get_properties();
-        $customer = json_decode($message->getBody());
-        $operation = $properties['type'];
-
-        switch ($operation) {
-            case self::CREATED:
-            case self::UPDATED:
-                $this->updateOrCreate($customer);
-                break;
-            case self::DELETED:
-                $this->delete($customer);
-                break;
-            default:
-                break;
+        $customer = null;
+        try {
+            $properties = $message->get_properties();
+            $customer = json_decode($message->getBody());
+            $operation = $properties['type'];
+            switch ($operation) {
+                case self::CREATED:
+                case self::UPDATED:
+                    $this->updateOrCreate($customer);
+                    break;
+                case self::DELETED:
+                    $this->delete($customer);
+                    break;
+                default:
+                    break;
+            }
+        } catch (Throwable $exception) {
+            $this->logError($exception, $customer);
         }
     }
 
+    /**
+     * @param stdClass $customer
+     * @return void
+     */
     private function updateOrCreate(stdClass $customer): void
     {
         $modelUser = config('sp-crm.model_user');
@@ -63,6 +87,11 @@ class MessageCustomer
         $this->syncBond($crmCustomer, $customer);
     }
 
+    /**
+     * @param Customer $crmCustomer
+     * @param stdClass $customer
+     * @return void
+     */
     private function syncBond(Customer $crmCustomer, stdClass $customer): void
     {
         Bond::where('crm_customer_id', $crmCustomer->id)->delete();
@@ -85,6 +114,10 @@ class MessageCustomer
         }
     }
 
+    /**
+     * @param stdClass $customer
+     * @return void
+     */
     private function delete(stdClass $customer): void
     {
         if ($localCustomer = Customer::where('uuid', $customer->uuid)->first()) {
