@@ -9,6 +9,7 @@ use PhpAmqpLib\Connection\AMQPSSLConnection;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Exception\AMQPExceptionInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
+use Throwable;
 
 class CustomersWorkerCommand extends Command
 {
@@ -99,8 +100,9 @@ class CustomersWorkerCommand extends Command
         try {
             if ($this->channel) {
                 $this->channel->close();
+                $this->channel = null;
             }
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
         }
     }
 
@@ -112,8 +114,9 @@ class CustomersWorkerCommand extends Command
         try {
             if ($this->connection) {
                 $this->connection->close();
+                $this->connection = null;
             }
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
         }
     }
 
