@@ -35,9 +35,11 @@ class MessageCustomer
     {
         $message->ack();
         $customer = null;
+        $messageBody = null;
         try {
+            $messageBody = $message->getBody();
+            $customer = json_decode($messageBody);
             $properties = $message->get_properties();
-            $customer = json_decode($message->getBody());
             $operation = $properties['type'];
             switch ($operation) {
                 case self::CREATED:
@@ -51,7 +53,7 @@ class MessageCustomer
                     break;
             }
         } catch (Throwable $exception) {
-            $this->logError($exception, $customer);
+            $this->logError($exception, $messageBody);
         }
     }
 

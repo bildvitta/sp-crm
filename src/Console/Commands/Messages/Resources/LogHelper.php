@@ -15,7 +15,7 @@ trait LogHelper
     {
         try {
             $worker = new \App\Models\Worker();
-            $worker->type = 'rabbitmq.worker.error.crm';
+            $worker->type = 'rabbitmq.worker.error';
             $worker->payload = [
                 'message' => $message
             ];
