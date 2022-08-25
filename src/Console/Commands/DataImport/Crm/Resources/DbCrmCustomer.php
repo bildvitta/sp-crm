@@ -8,7 +8,7 @@ class DbCrmCustomer
 {
     public function totalRecords(): int
     {
-        $query = "SELECT count(1) as total FROM customers WHERE deleted_at IS NULL";
+        $query = "SELECT count(1) as total FROM customers";
         $customers = DB::connection('crm')->select($query);
 
         return (int) $customers[0]->total;
@@ -29,6 +29,7 @@ class DbCrmCustomer
             customers.document,
             customers.income,
             customers.kind,
+            customers.deleted_at,
             users.hub_uuid AS user_uuid,
             nationalities.name AS nationality_name,
             occupations.name AS occupation_name,
@@ -39,7 +40,6 @@ class DbCrmCustomer
         LEFT JOIN nationalities ON customers.nationality_id = nationalities.id
         LEFT JOIN occupations ON customers.occupation_id = occupations.id
         LEFT JOIN civil_statuses ON customers.civil_status_id = civil_statuses.id
-        WHERE customers.deleted_at IS NULL
         LIMIT :limit OFFSET :offset";
         
         return DB::connection('crm')->select($query, [

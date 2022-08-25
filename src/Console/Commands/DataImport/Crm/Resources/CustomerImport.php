@@ -9,34 +9,47 @@ use stdClass;
 
 class CustomerImport
 {
+    /**
+     * @param stdClass $customer
+     * @param Collection $customerBonds
+     * @return void
+     */
     public function import(stdClass $customer, Collection $customerBonds): void
     {
         $modelUser = config('sp-crm.model_user');
         $userHub = $modelUser::select(['id'])
             ->whereHubUuid($customer->user_uuid)
             ->first();
-        $data = [
-            'uuid' => $customer->uuid,
-            'user_hub_id' => $userHub?->id,
-            'name' => $customer->name,
-            'phone' => $customer->phone,
-            'phone_two' => $customer->phone_two,
-            'email' => $customer->email,
-            'type' => $customer->type,
-            'document' => $customer->document,
-            'nationality' => $customer->nationality_name,
-            'occupation' => $customer->occupation_name,
-            'birthday' => $this->getBirthday($customer->birthday),
-            'civil_status' => $customer->civil_status_name,
-            'binding_civil_status' => $customer->civil_status_is_binding,
-            'income' => $customer->income,
-            'is_incomplete_registration' => $this->isIncompleteRegistration($customer),
-            'kind' => $customer->kind,
-        ];
-        $crmCustomer = Customer::updateOrCreate(['uuid' => $customer->uuid], $data);
-        $this->syncBond($crmCustomer, $customerBonds);
+        if (!$modelCustomer = Customer::withTrashed()->where('uuid', $customer->uuid)->first()) {
+            $modelCustomer = new Customer();
+            $modelCustomer->uuid = $customer->uuid;
+        }
+        $modelCustomer->user_hub_id = $userHub?->id;
+        $modelCustomer->name = $customer->name;
+        $modelCustomer->phone = $customer->phone;
+        $modelCustomer->phone_two = $customer->phone_two;
+        $modelCustomer->email = $customer->email;
+        $modelCustomer->type = $customer->type;
+        $modelCustomer->document = $customer->document;
+        $modelCustomer->nationality = $customer->nationality_name;
+        $modelCustomer->occupation = $customer->occupation_name;
+        $modelCustomer->birthday = $this->getBirthday($customer->birthday);
+        $modelCustomer->civil_status = $customer->civil_status_name;
+        $modelCustomer->binding_civil_status = $customer->civil_status_is_binding;
+        $modelCustomer->income = $customer->income;
+        $modelCustomer->is_incomplete_registration = $this->isIncompleteRegistration($customer);
+        $modelCustomer->kind = $customer->kind;
+        $modelCustomer->deleted_at = $customer->deleted_at;
+        $modelCustomer->save();
+
+        $this->syncBond($modelCustomer, $customerBonds);
     }
 
+    /**
+     * @param Customer $crmCustomer
+     * @param Collection $customerBonds
+     * @return void
+     */
     private function syncBond(Customer $crmCustomer, Collection $customerBonds): void
     {
         Bond::where('crm_customer_id', $crmCustomer->id)->delete();
@@ -45,7 +58,7 @@ class CustomerImport
             $bond->crm_customer_id = $crmCustomer->id;
             $bond->bond_crm_customer_uuid = $customerBond->customer_bond_uuid;
             $bond->kind = $customerBond->kind;
-            if ($localCustomer = Customer::where('uuid', $customerBond->customer_bond_uuid)->first()) {
+            if ($localCustomer = Customer::withTrashed()->where('uuid', $customerBond->customer_bond_uuid)->first()) {
                 $bond->bond_crm_customer_id = $localCustomer->id;
             }
             $bond->save();
@@ -59,6 +72,10 @@ class CustomerImport
         }
     }
 
+    /**
+     * @param stdClass $customer
+     * @return bool
+     */
     private function isIncompleteRegistration(stdClass $customer): bool
     {
         $attributes = [
@@ -81,6 +98,10 @@ class CustomerImport
         return false;
     }
 
+    /**
+     * @param mixed $birthday
+     * @return string|null
+     */
     private function getBirthday($birthday): ?string
     {
         if ($birthday === '0000-00-00') {

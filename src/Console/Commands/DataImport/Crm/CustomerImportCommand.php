@@ -2,8 +2,8 @@
 
 namespace BildVitta\SpCrm\Console\Commands\DataImport\Crm;
 
+use BildVitta\SpCrm\Console\Commands\DataImport\Crm\Jobs\CrmImportJob;
 use BildVitta\SpCrm\Console\Commands\DataImport\Crm\Resources\DbCrmCustomer;
-use BildVitta\SpCrm\Console\Commands\DataImport\Crm\Resources\CustomerImport;
 use Illuminate\Console\Command;
 
 class CustomerImportCommand extends Command
@@ -13,7 +13,7 @@ class CustomerImportCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'dataimport:crm_customers';
+    protected $signature = 'dataimport:crm_customers {--select=300}';
 
     /**
      * The console command description.
@@ -22,22 +22,25 @@ class CustomerImportCommand extends Command
      */
     protected $description = 'Call init sync customers in database';
 
+    /**
+     * @var int
+     */
     private int $selectLimit = 300;
 
+    /**
+     * @var DbCrmCustomer
+     */
     private DbCrmCustomer $dbCrmCustomer;
-
-    private CustomerImport $customerImport;
 
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct(DbCrmCustomer $dbCrmCustomer, CustomerImport $customerImport)
+    public function __construct(DbCrmCustomer $dbCrmCustomer)
     {
         parent::__construct();
         $this->dbCrmCustomer = $dbCrmCustomer;
-        $this->customerImport = $customerImport;
     }
 
     /**
@@ -48,38 +51,43 @@ class CustomerImportCommand extends Command
     public function handle()
     {
         $this->info('Starting import');
-        $this->configConnection();
-       
-        $totalRecords = $this->dbCrmCustomer->totalRecords();
-
-        $this->newLine();
-        $bar = $this->output->createProgressBar($totalRecords);
-        $bar->start();
         
-        $loop = ceil($totalRecords / $this->selectLimit);
-        for ($i = 0; $i < $loop; $i++) {
-            $offset = $this->selectLimit * $i;
-            
-            $customers = collect($this->dbCrmCustomer->getCustomers($this->selectLimit, $offset));
-            $customerIds = $customers->pluck('id')->toArray();
-            $customerBonds = collect($this->dbCrmCustomer->getCustomerBonds($customerIds));
-            
-            foreach ($customers as $customer) {
-                $relatedCustomerBonds = $customerBonds->filter(function ($bond) use ($customer) {
-                    return $bond->customer_id === $customer->id;
-                });
-                $this->customerImport->import($customer, $relatedCustomerBonds);
-                $bar->advance(1);
-            }
+        if (! class_exists('\App\Models\Worker')) {
+            $this->info('Error: class \App\Models\Worker not exists');
+            return 1;
         }
-        $bar->finish();
 
-        $this->newLine(2);
-        $this->info('Import finished');
+        if ($selectLimit = $this->option('select')) {
+            $this->selectLimit = (int) $selectLimit;
+        }
+        
+        $this->configConnection();
+        $totalRecords = $this->dbCrmCustomer->totalRecords();
+        $this->info('Total records: ' . $totalRecords);
+        
+        $worker = new \App\Models\Worker();
+        $worker->type = 'sp-crm.dataimport.customers';
+        $worker->status = 'created';
+        $worker->schedule = now();
+        $worker->payload = [
+            'limit' => $this->selectLimit,
+            'offset' => 0,
+            'total' => $totalRecords,
+            'progress_percentage' => 0,
+        ];
+        $worker->save();
+       
+        CrmImportJob::dispatch($worker->id);
+
+        $this->info('Worker type: sp-crm.dataimport.customers');
+        $this->info('Job started, command execution ended');
 
         return 0;
     }
 
+    /**
+     * @return void
+     */
     private function configConnection(): void
     {
         config([
