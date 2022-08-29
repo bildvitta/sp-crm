@@ -31,7 +31,7 @@ class CrmImportJob implements ShouldQueue
      *
      * @var int
      */
-    public $timeout = 300;
+    public $timeout = 1800;
 
     /**
      * @var int
@@ -129,19 +129,16 @@ class CrmImportJob implements ShouldQueue
         $newOffset = $this->offset + $this->limit;
 
         if ($newOffset < $this->total) {
-            $worker->forceDelete();
-            $newWorker = new Worker();
-            $newWorker->type = 'sp-crm.dataimport.customers';
-            $newWorker->status = 'created';
-            $newWorker->schedule = now();
-            $newWorker->payload = [
+            $worker->schedule = now();
+            $worker->created_at = now();
+            $worker->payload = [
                 'limit' => $this->limit,
                 'offset' => $newOffset,
                 'total' => $this->total,
                 'progress_percentage' => round(($newOffset * 100) / $this->total, 2),
             ];
-            $newWorker->save();
-            CrmImportJob::dispatch($newWorker->id);
+            $worker->save();
+            CrmImportJob::dispatch($worker->id);
         } else {
             $payload = $worker->payload;
             $payload->progress_percentage = 100;
