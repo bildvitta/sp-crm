@@ -13,7 +13,7 @@ class CustomerImportCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'dataimport:crm_customers {--select=300}';
+    protected $signature = 'dataimport:crm_customers {--select=500} {--offset=0}';
 
     /**
      * The console command description.
@@ -21,11 +21,6 @@ class CustomerImportCommand extends Command
      * @var string
      */
     protected $description = 'Call init sync customers in database';
-
-    /**
-     * @var int
-     */
-    private int $selectLimit = 300;
 
     /**
      * @var DbCrmCustomer
@@ -57,8 +52,14 @@ class CustomerImportCommand extends Command
             return 1;
         }
 
-        if ($selectLimit = $this->option('select')) {
-            $this->selectLimit = (int) $selectLimit;
+        $selectLimit = 500;
+        if ($optionSelect = $this->option('select')) {
+            $selectLimit = (int) $optionSelect;
+        }
+
+        $offset = 0;
+        if ($optionOffset = $this->option('offset')) {
+            $offset = (int) $optionOffset;
         }
         
         $this->configConnection();
@@ -70,8 +71,8 @@ class CustomerImportCommand extends Command
         $worker->status = 'created';
         $worker->schedule = now();
         $worker->payload = [
-            'limit' => $this->selectLimit,
-            'offset' => 0,
+            'limit' => $selectLimit,
+            'offset' => $offset,
             'total' => $totalRecords,
             'progress_percentage' => 0,
         ];
