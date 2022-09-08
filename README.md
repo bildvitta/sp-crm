@@ -45,8 +45,26 @@ return [
 ];
 ```
 
-With the configuration file sp-crm.php published in your configuration folder it is necessary to create environment variables in your .env file:
+## Importing data
 
+You can import initial data from the parent module by setting the database connection data in the configuration file. However, it will be necessary to import the data from the dependent module first: sp-hub.
+
+```bash
+php artisan dataimport:crm_customers
 ```
-MS_SP_CRM_TABLE_PREFIX="crm_"
+
+## Database seeder
+
+You can seed your database with fake data to work with. However, it will be necessary to seed the other dependency first: sp-hub.
+
+```bash
+php artisan db:seed --class=SpCrmSeeder
+```
+
+## Running the worker
+
+After setting the message broker access data in the configuration file, you can run the worker to keep the data up to date.
+
+```bash
+php artisan rabbitmqworker:customers
 ```
