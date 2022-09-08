@@ -2,6 +2,9 @@
 
 namespace BildVitta\SpCrm\Models;
 
+use BildVitta\SpCrm\Factories\CustomerFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -12,13 +15,29 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Customer extends BaseModel
 {
+    use HasFactory;
     use SoftDeletes;
 
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
-        parent::__construct();
+        parent::__construct($attributes);
         $this->table = sprintf('%scustomers', config('sp-crm.table_prefix'));
     }
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return Factory
+     */
+    protected static function newFactory(): Factory
+    {
+        return CustomerFactory::new();
+    }
+
+    public const TYPE_LIST = [
+        'cpf' => 'Pessoa física',
+        'cnpj' => 'Pessoa jurídica'
+    ];
 
     public const KIND_LIST = [
         'customer' => 'Cliente',
@@ -28,6 +47,15 @@ class Customer extends BaseModel
         'procurator' => 'Procurador',
         'joint_purchase' => 'Compra conjunta'
     ];
+
+    public const PWD_TYPE_LIST = [
+        'visual' => 'Visual',
+        'hearing' => 'Auditiva',
+        'mental' => 'Mental',
+        'physical' => 'Física',
+        'multiple' => 'Múltipla',
+    ];
+
 
     /**
      * The attributes that are mass assignable.

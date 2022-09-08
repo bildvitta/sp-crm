@@ -2,6 +2,9 @@
 
 namespace BildVitta\SpCrm\Models;
 
+use BildVitta\SpCrm\Factories\BondFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -11,10 +14,22 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Bond extends Model
 {
-    public function __construct()
+    use HasFactory;
+    
+    public function __construct(array $attributes = [])
     {
-        parent::__construct();
+        parent::__construct($attributes);
         $this->table = sprintf('%sbonds', config('sp-crm.table_prefix'));
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return Factory
+     */
+    protected static function newFactory(): Factory
+    {
+        return BondFactory::new();
     }
 
     /**
