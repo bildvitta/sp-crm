@@ -16,6 +16,11 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 class SpCrmServiceProvider extends PackageServiceProvider
 {
     /**
+     * @var string $seeder
+     */
+    protected string $seeder = 'SpCrmSeeder';
+    
+    /**
      * @param  Package  $package
      *
      * @return void
@@ -43,5 +48,10 @@ class SpCrmServiceProvider extends PackageServiceProvider
                 CustomersWorkerCommand::class,
                 InstallSp::class,
             ]);
+
+        $this->publishes([
+            $package->basePath("/../database/seeders/{$this->seeder}.php.stub")
+            => database_path("seeders/{$this->seeder}.php")
+        ], 'seeders');
     }
 }
