@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    private string $tableName;
+
+    public function __construct()
+    {
+        $this->tableName = sprintf('%scustomers', config('sp-crm.table_prefix'));
+    }
+
+    public function up()
+    {
+        if (! Schema::hasColumn($this->tableName, 'is_active')) {
+            Schema::table($this->tableName, function (Blueprint $table) {
+                $table->boolean('is_active')->default(true)->after('kind');
+            });
+        }
+    }
+
+    public function down()
+    {
+        if (Schema::hasColumn($this->tableName, 'is_active')) {
+            Schema::table($this->tableName, function (Blueprint $table) {
+                $table->dropColumn('is_active');
+            });
+        }
+    }
+};

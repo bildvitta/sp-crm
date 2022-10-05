@@ -40,6 +40,7 @@ class CustomerImport
         $modelCustomer->is_incomplete_registration = $this->isIncompleteRegistration($customer);
         $modelCustomer->kind = $customer->kind;
         $modelCustomer->deleted_at = $customer->deleted_at;
+        $modelCustomer->is_active = (bool) $customer->is_active;
         $modelCustomer->save();
 
         $this->syncBond($modelCustomer, $customerBonds);

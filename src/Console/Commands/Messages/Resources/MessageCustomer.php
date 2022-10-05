@@ -85,6 +85,9 @@ class MessageCustomer
             'is_incomplete_registration' => $customer->is_incomplete_registration,
             'kind' => $customer->kind,
         ];
+        if (isset($customer->is_active)) {
+            $data['is_active'] = $customer->is_active;
+        }
         $crmCustomer = Customer::updateOrCreate(['uuid' => $customer->uuid], $data);
         $this->syncBond($crmCustomer, $customer);
     }

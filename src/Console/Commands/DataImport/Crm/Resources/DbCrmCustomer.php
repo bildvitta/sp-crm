@@ -30,6 +30,7 @@ class DbCrmCustomer
             customers.income,
             customers.kind,
             customers.deleted_at,
+            customers.is_active,
             users.hub_uuid AS user_uuid,
             nationalities.name AS nationality_name,
             occupations.name AS occupation_name,
