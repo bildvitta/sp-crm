@@ -79,11 +79,13 @@ class Customer extends BaseModel
         'income',
         'is_incomplete_registration',
         'kind',
+        'is_active',
     ];
 
     protected $casts = [
         'is_incomplete_registration' => 'boolean',
         'binding_civil_status' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function bonds(): BelongsToMany
