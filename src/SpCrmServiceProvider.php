@@ -38,6 +38,7 @@ class SpCrmServiceProvider extends PackageServiceProvider
             ->hasMigrations([
                 'create_sp_crm_customers_table',
                 'create_sp_crm_bonds_table',
+                'add_column_is_active_on_customers_table',
             ])
             ->runsMigrations();
     
