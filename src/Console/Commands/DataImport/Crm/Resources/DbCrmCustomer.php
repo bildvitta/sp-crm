@@ -28,7 +28,6 @@ class DbCrmCustomer
             customers.type,
             customers.document,
             customers.income,
-            customers.kind,
             customers.deleted_at,
             customers.is_active,
             users.hub_uuid AS user_uuid,

@@ -83,7 +83,6 @@ class MessageCustomer
             'binding_civil_status' => $customer->binding_civil_status,
             'income' => $customer->income,
             'is_incomplete_registration' => $customer->is_incomplete_registration,
-            'kind' => $customer->kind,
         ];
         if (isset($customer->is_active)) {
             $data['is_active'] = $customer->is_active;

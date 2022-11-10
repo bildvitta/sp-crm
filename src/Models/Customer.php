@@ -78,7 +78,6 @@ class Customer extends BaseModel
         'binding_civil_status',
         'income',
         'is_incomplete_registration',
-        'kind',
         'is_active',
     ];
 
@@ -102,11 +101,6 @@ class Customer extends BaseModel
             ->withTimestamps();
     }
 
-    public function related_customer()
-    {
-        return $this->belongsTo(Customer::class, 'related_customer_id', 'id');
-    }
-
     public function related_customers()
     {
         return $this->belongsToMany(Customer::class, (new Bond())->getTable(), 'crm_customer_id', 'bond_crm_customer_id')
@@ -119,16 +113,7 @@ class Customer extends BaseModel
         if (isset($this->pivot)) {
             return $this->pivot->kind;
         }
-        return $this->kind ?? null;
-    }
-
-    public function kindName()
-    {
-        if (isset($this->kind)) {
-            return self::KIND_LIST[$this->kind];
-        }
-
-        return '';
+        return null;
     }
 
     public function getHasRelatedCustomersAttribute(): bool
