@@ -44,7 +44,6 @@ class CustomerFactory extends Factory
             'binding_civil_status' => fake()->words(2, true),
             'income' => fake()->randomFloat(2, 1000, 10000),
             'is_incomplete_registration' => fake()->boolean,
-            'kind' => fake()->randomElement(array_keys(Customer::KIND_LIST)),
         ];
     }
 }
