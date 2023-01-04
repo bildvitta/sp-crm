@@ -1,0 +1,54 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    private string $tableName;
+
+    public function __construct()
+    {
+        $this->tableName = sprintf('%scustomers', config('sp-crm.table_prefix'));
+    }
+
+    public function up()
+    {
+        Schema::table($this->tableName, function (Blueprint $table) {
+            if (! Schema::hasColumn($this->tableName, 'supervisor_id')) {
+                $table->foreignId('supervisor_id')
+                    ->nullable()
+                    ->after('user_hub_id')
+                    ->constrained('users')
+                    ->cascadeOnUpdate()
+                    ->nullOnDelete();
+            }
+            if (! Schema::hasColumn($this->tableName, 'manager_id')) {
+                $table->foreignId('manager_id')
+                    ->nullable()
+                    ->after('supervisor_id')
+                    ->constrained('users')
+                    ->cascadeOnUpdate()
+                    ->nullOnDelete();
+            }
+            if (! Schema::hasColumn($this->tableName, 'real_estate_agency_id')) {
+                $table->foreignId('real_estate_agency_id')
+                    ->nullable()
+                    ->after('manager_id')
+                    ->constrained('hub_companies')
+                    ->cascadeOnUpdate()
+                    ->nullOnDelete();
+            }
+        });
+    }
+
+    public function down()
+    {
+        Schema::table($this->tableName, function (Blueprint $table) {
+            $table->dropConstrainedForeignId('supervisor_id');
+            $table->dropConstrainedForeignId('manager_id');
+            $table->dropConstrainedForeignId('real_estate_agency_id');
+        });
+    }
+};

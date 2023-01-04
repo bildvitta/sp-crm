@@ -6,6 +6,7 @@ use BildVitta\SpCrm\Models\Customer;
 use BildVitta\SpCrm\Models\Bond;
 use Illuminate\Support\Collection;
 use stdClass;
+use BildVitta\Hub\Entities\HubCompany;
 
 class CustomerImport
 {
@@ -24,6 +25,22 @@ class CustomerImport
             $modelCustomer = new Customer();
             $modelCustomer->uuid = $customer->uuid;
         }
+
+        $managerId = null;
+        if (isset($customer->manager_uuid)) {
+            $managerId = $modelUser::where('hub_uuid', $customer->manager_uuid)->value('id');
+        }
+
+        $supervisorId = null;
+        if (isset($customer->supervisor_uuid)) {
+            $supervisorId = $modelUser::where('hub_uuid', $customer->supervisor_uuid)->value('id');
+        }
+        
+        $realEstateAgencyId = null;
+        if (isset($customer->real_estate_agency_uuid)) {
+            $realEstateAgencyId = HubCompany::where('uuid', $customer->real_estate_agency_uuid)->value('id');
+        }
+
         $modelCustomer->user_hub_id = $userHub?->id;
         $modelCustomer->name = $customer->name;
         $modelCustomer->phone = $customer->phone;
@@ -40,6 +57,9 @@ class CustomerImport
         $modelCustomer->is_incomplete_registration = $this->isIncompleteRegistration($customer);
         $modelCustomer->deleted_at = $customer->deleted_at;
         $modelCustomer->is_active = (bool) $customer->is_active;
+        $modelCustomer->manager_id = $managerId;
+        $modelCustomer->supervisor_id = $supervisorId;
+        $modelCustomer->real_estate_agency_id = $realEstateAgencyId;
         $modelCustomer->save();
 
         $this->syncBond($modelCustomer, $customerBonds);

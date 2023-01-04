@@ -65,6 +65,9 @@ class Customer extends BaseModel
     protected $fillable = [
         'uuid',
         'user_hub_id',
+        'supervisor_id',
+        'manager_id',
+        'real_estate_agency_id',
         'name',
         'phone',
         'phone_two',
