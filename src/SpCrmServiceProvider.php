@@ -40,6 +40,7 @@ class SpCrmServiceProvider extends PackageServiceProvider
                 'create_sp_crm_bonds_table',
                 'add_column_is_active_on_customers_table',
                 'drop_column_kind_on_customers_table',
+                'add_sales_team_to_customers_table',
             ])
             ->runsMigrations();
     

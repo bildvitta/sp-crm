@@ -2,6 +2,7 @@
 
 namespace BildVitta\SpCrm\Console\Commands\Messages\Resources;
 
+use BildVitta\Hub\Entities\HubCompany;
 use BildVitta\SpCrm\Models\Customer;
 use BildVitta\SpCrm\Models\Bond;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -87,6 +88,26 @@ class MessageCustomer
         if (isset($customer->is_active)) {
             $data['is_active'] = $customer->is_active;
         }
+
+        if (config('sp-crm.customer_with_sales_team')) {
+            $managerId = null;
+            if (isset($customer->manager)) {
+                $managerId = $modelUser::where('hub_uuid', $customer->manager)->value('id');
+            }
+            $supervisorId = null;
+            if (isset($customer->supervisor)) {
+                $supervisorId = $modelUser::where('hub_uuid', $customer->supervisor)->value('id');
+            }
+            $realEstateAgencyId = null;
+            if (isset($customer->real_estate_agency)) {
+                $realEstateAgencyId = HubCompany::where('uuid', $customer->real_estate_agency)->value('id');
+            }
+
+            $data['manager_id'] = $managerId;
+            $data['supervisor_id'] = $supervisorId;
+            $data['real_estate_agency_id'] = $realEstateAgencyId;
+        }
+
         $crmCustomer = Customer::updateOrCreate(['uuid' => $customer->uuid], $data);
         $this->syncBond($crmCustomer, $customer);
     }

@@ -54,6 +54,11 @@ class CrmImportJob implements ShouldQueue
     private int $total;
 
     /**
+     * @var bool
+     */
+    private bool $withSalesTeam;
+
+    /**
      * @var Worker
      */
     private $worker;
@@ -89,8 +94,8 @@ class CrmImportJob implements ShouldQueue
             return;
         }
         $this->init();
-        
-        $customers = collect($this->dbCrmCustomer->getCustomers($this->limit, $this->offset));
+
+        $customers = collect($this->dbCrmCustomer->getCustomers($this->limit, $this->offset, $this->withSalesTeam));
         $customerIds = $customers->pluck('id')->toArray();
         $customerBonds = collect($this->dbCrmCustomer->getCustomerBonds($customerIds));
         
@@ -114,6 +119,7 @@ class CrmImportJob implements ShouldQueue
         $this->limit = (int) $this->worker->payload->limit;
         $this->offset = (int) $this->worker->payload->offset;
         $this->total = (int) $this->worker->payload->total;
+        $this->withSalesTeam = (bool) $this->worker->payload->with_sales_team;
         $this->worker->status = 'in_progress';
         $this->worker->save();
     }
@@ -136,6 +142,7 @@ class CrmImportJob implements ShouldQueue
                 'offset' => $newOffset,
                 'total' => $this->total,
                 'progress_percentage' => round(($newOffset * 100) / $this->total, 2),
+                'with_sales_team' => $this->withSalesTeam,
             ];
             $worker->save();
             CrmImportJob::dispatch($worker->id);

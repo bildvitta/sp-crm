@@ -6,15 +6,28 @@ use Illuminate\Support\Facades\DB;
 
 class DbCrmCustomer
 {
-    public function totalRecords(): int
+    /**
+     * @param bool $withSalesTeam
+     * @return int
+     */
+    public function totalRecords(bool $withSalesTeam = false): int
     {
         $query = "SELECT count(1) as total FROM customers";
+        if ($withSalesTeam) {
+            $query .= ' WHERE supervisor_id IS NOT NULL AND manager_id IS NOT NULL';
+        }
         $customers = DB::connection('crm')->select($query);
 
         return (int) $customers[0]->total;
     }
 
-    public function getCustomers(int $limit, int $offset): array
+    /**
+     * @param int $limit
+     * @param int $offset
+     * @param bool $withSalesTeam
+     * @return array
+     */
+    public function getCustomers(int $limit, int $offset, bool $withSalesTeam = false): array
     {
         $query = "SELECT
             customers.id, 
@@ -30,17 +43,26 @@ class DbCrmCustomer
             customers.income,
             customers.deleted_at,
             customers.is_active,
-            users.hub_uuid AS user_uuid,
+            broker.hub_uuid AS user_uuid,
+            supervisor.hub_uuid AS supervisor_uuid,
+            manager.hub_uuid AS manager_uuid,
+            hub_companies.uuid AS real_estate_agency_uuid,
             nationalities.name AS nationality_name,
             occupations.name AS occupation_name,
             civil_statuses.name AS civil_status_name,
             civil_statuses.is_binding AS civil_status_is_binding
         FROM customers 
-        LEFT JOIN users ON customers.user_id = users.id
+        LEFT JOIN users broker ON customers.user_id = broker.id
+        LEFT JOIN users supervisor ON customers.supervisor_id = supervisor.id
+        LEFT JOIN users manager ON customers.manager_id = manager.id
+        LEFT JOIN hub_companies ON customers.real_estate_agency_id = hub_companies.id
         LEFT JOIN nationalities ON customers.nationality_id = nationalities.id
         LEFT JOIN occupations ON customers.occupation_id = occupations.id
-        LEFT JOIN civil_statuses ON customers.civil_status_id = civil_statuses.id
-        LIMIT :limit OFFSET :offset";
+        LEFT JOIN civil_statuses ON customers.civil_status_id = civil_statuses.id";
+        if ($withSalesTeam) {
+            $query .= " WHERE customers.supervisor_id IS NOT NULL AND customers.manager_id IS NOT NULL";
+        }
+        $query .= " LIMIT :limit OFFSET :offset";
         
         return DB::connection('crm')->select($query, [
             'limit' => $limit,

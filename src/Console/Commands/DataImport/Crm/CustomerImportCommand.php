@@ -13,7 +13,7 @@ class CustomerImportCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'dataimport:crm_customers {--select=500} {--offset=0}';
+    protected $signature = 'dataimport:crm_customers {--select=500} {--offset=0} {--with_sales_team}';
 
     /**
      * The console command description.
@@ -61,9 +61,11 @@ class CustomerImportCommand extends Command
         if ($optionOffset = $this->option('offset')) {
             $offset = (int) $optionOffset;
         }
+
+        $withSalesTeam = $this->option('with_sales_team');
         
         $this->configConnection();
-        $totalRecords = $this->dbCrmCustomer->totalRecords();
+        $totalRecords = $this->dbCrmCustomer->totalRecords($withSalesTeam);
         $this->info('Total records: ' . $totalRecords);
         
         $worker = new \App\Models\Worker();
@@ -75,6 +77,7 @@ class CustomerImportCommand extends Command
             'offset' => $offset,
             'total' => $totalRecords,
             'progress_percentage' => 0,
+            'with_sales_team' => $withSalesTeam,
         ];
         $worker->save();
        
