@@ -98,14 +98,16 @@ class CrmImportJob implements ShouldQueue
         $customers = collect($this->dbCrmCustomer->getCustomers($this->limit, $this->offset, $this->withSalesTeam));
         $customerIds = $customers->pluck('id')->toArray();
         $customerBonds = collect($this->dbCrmCustomer->getCustomerBonds($customerIds));
-        
+
         foreach ($customers as $customer) {
             $relatedCustomerBonds = $customerBonds->filter(function ($bond) use ($customer) {
                 return $bond->customer_id === $customer->id;
             });
             $this->customerImport->import($customer, $relatedCustomerBonds);
         }
-        $this->dispatchNext();
+
+        $this->worker->status = 'finished';
+        $this->worker->save();
     }
 
     /**
@@ -122,37 +124,6 @@ class CrmImportJob implements ShouldQueue
         $this->withSalesTeam = (bool) $this->worker->payload->with_sales_team;
         $this->worker->status = 'in_progress';
         $this->worker->save();
-    }
-
-    /**
-     * @return void
-     */
-    private function dispatchNext(): void
-    {
-        if (! $worker = Worker::find($this->workerId)) {
-            return;
-        }
-        $newOffset = $this->offset + $this->limit;
-
-        if ($newOffset < $this->total) {
-            $worker->schedule = now();
-            $worker->created_at = now();
-            $worker->payload = [
-                'limit' => $this->limit,
-                'offset' => $newOffset,
-                'total' => $this->total,
-                'progress_percentage' => round(($newOffset * 100) / $this->total, 2),
-                'with_sales_team' => $this->withSalesTeam,
-            ];
-            $worker->save();
-            CrmImportJob::dispatch($worker->id);
-        } else {
-            $payload = $worker->payload;
-            $payload->progress_percentage = 100;
-            $worker->payload = $payload;
-            $worker->status = 'finished';
-            $worker->save();
-        }
     }
 
     /**

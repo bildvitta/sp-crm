@@ -46,11 +46,13 @@ class CustomerImportCommand extends Command
     public function handle()
     {
         $this->info('Starting import');
-        
+
         if (! class_exists('\App\Models\Worker')) {
             $this->info('Error: class \App\Models\Worker not exists');
             return 1;
         }
+
+        $this->configConnection();
 
         $selectLimit = 500;
         if ($optionSelect = $this->option('select')) {
@@ -63,28 +65,31 @@ class CustomerImportCommand extends Command
         }
 
         $withSalesTeam = $this->option('with_sales_team');
-        
-        $this->configConnection();
+
         $totalRecords = $this->dbCrmCustomer->totalRecords($withSalesTeam);
+
         $this->info('Total records: ' . $totalRecords);
-        
-        $worker = new \App\Models\Worker();
-        $worker->type = 'sp-crm.dataimport.customers';
-        $worker->status = 'created';
-        $worker->schedule = now();
-        $worker->payload = [
-            'limit' => $selectLimit,
-            'offset' => $offset,
-            'total' => $totalRecords,
-            'progress_percentage' => 0,
-            'with_sales_team' => $withSalesTeam,
-        ];
-        $worker->save();
-       
-        CrmImportJob::dispatch($worker->id);
+
+        while ($offset <= $totalRecords) {
+            $worker = new \App\Models\Worker();
+            $worker->type = 'sp-crm.dataimport.customers';
+            $worker->status = 'created';
+            $worker->schedule = now();
+            $worker->payload = [
+                'limit' => $selectLimit,
+                'offset' => $offset,
+                'total' => $totalRecords,
+                'with_sales_team' => $withSalesTeam,
+            ];
+            $worker->save();
+
+            CrmImportJob::dispatch($worker->id);
+
+            $offset += $selectLimit;
+        }
 
         $this->info('Worker type: sp-crm.dataimport.customers');
-        $this->info('Job started, command execution ended');
+        $this->info('Jobs started, command execution ended');
 
         return 0;
     }
