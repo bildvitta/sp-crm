@@ -53,13 +53,24 @@ class CustomerImport
         $modelCustomer->birthday = $this->getBirthday($customer->birthday);
         $modelCustomer->civil_status = $customer->civil_status_name;
         $modelCustomer->binding_civil_status = $customer->civil_status_is_binding;
+        $modelCustomer->binding_signer_civil_status = $customer->civil_status_is_binding_signer;
         $modelCustomer->income = $customer->income;
+        $modelCustomer->informal_income = $customer->informal_income;
         $modelCustomer->is_incomplete_registration = $this->isIncompleteRegistration($customer);
         $modelCustomer->deleted_at = $customer->deleted_at;
         $modelCustomer->is_active = (bool) $customer->is_active;
         $modelCustomer->manager_id = $managerId;
         $modelCustomer->supervisor_id = $supervisorId;
         $modelCustomer->real_estate_agency_id = $realEstateAgencyId;
+        $modelCustomer->rg = $customer->rg;
+        $modelCustomer->address = $customer->address;
+        $modelCustomer->street_number = $customer->street_number;
+        $modelCustomer->complement = $customer->complement;
+        $modelCustomer->neighborhood = $customer->neighborhood;
+        $modelCustomer->city = $customer->city;
+        $modelCustomer->state = $customer->state;
+        $modelCustomer->postal_code = $customer->postal_code;
+        $modelCustomer->ie = $customer->ie;
         $modelCustomer->save();
 
         $this->syncBond($modelCustomer, $customerBonds);

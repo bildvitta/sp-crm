@@ -41,8 +41,18 @@ class DbCrmCustomer
             customers.type,
             customers.document,
             customers.income,
+            customers.informal_income,
             customers.deleted_at,
             customers.is_active,
+            customers.rg,
+            customers.ie,
+            customers.address,
+            customers.street_number,
+            customers.complement,
+            customers.neighborhood,
+            customers.city,
+            customers.state,
+            customers.postal_code,
             broker.hub_uuid AS user_uuid,
             supervisor.hub_uuid AS supervisor_uuid,
             manager.hub_uuid AS manager_uuid,
@@ -50,7 +60,8 @@ class DbCrmCustomer
             nationalities.name AS nationality_name,
             occupations.name AS occupation_name,
             civil_statuses.name AS civil_status_name,
-            civil_statuses.is_binding AS civil_status_is_binding
+            civil_statuses.is_binding AS civil_status_is_binding,
+            civil_statuses.is_binding_signer AS civil_status_is_binding_signer
         FROM customers 
         LEFT JOIN users broker ON customers.user_id = broker.id
         LEFT JOIN users supervisor ON customers.supervisor_id = supervisor.id

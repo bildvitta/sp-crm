@@ -82,8 +82,19 @@ class MessageCustomer
             'birthday' => $customer->birthday === '0000-00-00' ? null : $customer->birthday,
             'civil_status' => $customer->civil_status,
             'binding_civil_status' => $customer->binding_civil_status,
+            'binding_signer_civil_status' => $customer->binding_signer_civil_status,
             'income' => $customer->income,
+            'informal_income' => $customer->informal_income,
             'is_incomplete_registration' => $customer->is_incomplete_registration,
+            'rg' => $customer->rg,
+            'ie' => $customer->ie,
+            'address' => $customer->address,
+            'street_number' => $customer->street_number,
+            'complement' => $customer->complement,
+            'neighborhood' => $customer->neighborhood,
+            'city' => $customer->city,
+            'state' => $customer->state,
+            'postal_code' => $customer->postal_code,
         ];
         if (isset($customer->is_active)) {
             $data['is_active'] = $customer->is_active;
