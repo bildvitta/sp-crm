@@ -79,14 +79,26 @@ class Customer extends BaseModel
         'birthday',
         'civil_status',
         'binding_civil_status',
+        'binding_signer_civil_status',
         'income',
+        'informal_income',
         'is_incomplete_registration',
         'is_active',
+        'rg',
+        'ie',
+        'address',
+        'street_number',
+        'complement',
+        'neighborhood',
+        'city',
+        'state',
+        'postal_code',
     ];
 
     protected $casts = [
         'is_incomplete_registration' => 'boolean',
         'binding_civil_status' => 'boolean',
+        'binding_signer_civil_status' => 'boolean',
         'is_active' => 'boolean',
     ];
 
