@@ -18,22 +18,6 @@ class Customer extends BaseModel
     use HasFactory;
     use SoftDeletes;
 
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-        $this->table = sprintf('%scustomers', config('sp-crm.table_prefix'));
-    }
-
-    /**
-     * Create a new factory instance for the model.
-     *
-     * @return Factory
-     */
-    protected static function newFactory(): Factory
-    {
-        return CustomerFactory::new();
-    }
-
     public const TYPE_LIST = [
         'cpf' => 'Pessoa física',
         'cnpj' => 'Pessoa jurídica'
@@ -56,12 +40,6 @@ class Customer extends BaseModel
         'multiple' => 'Múltipla',
     ];
 
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'uuid',
         'user_hub_id',
@@ -100,7 +78,25 @@ class Customer extends BaseModel
         'binding_civil_status' => 'boolean',
         'binding_signer_civil_status' => 'boolean',
         'is_active' => 'boolean',
+        'income' => 'real',
+        'informal_income' => 'real',
     ];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->table = sprintf('%scustomers', config('sp-crm.table_prefix'));
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return Factory
+     */
+    protected static function newFactory(): Factory
+    {
+        return CustomerFactory::new();
+    }
 
     public function bonds(): BelongsToMany
     {
